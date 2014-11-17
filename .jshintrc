@@ -85,6 +85,7 @@
 
   // Custom Globals
   "globals"       : {         // additional predefined global variables
-                      "sharejs": true
+                      "sharejs": true,
+                      "annyang": true
                     }
 }

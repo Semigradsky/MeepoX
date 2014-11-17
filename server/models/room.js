@@ -1,8 +1,8 @@
 'use strict';
 
 var mongoose = require('mongoose');
-var colorize = require('../libs/colorize');
-var id = require('../libs/idGenerator');
+var color = require('../libs/generators/color');
+var id = require('../libs/generators/id');
 
 var Schema = mongoose.Schema;
 
@@ -19,7 +19,7 @@ var RoomSchema = new Schema({
   },
   name: {
     type: String,
-    require: true,
+    require: true
   },
   description: {
     type: String,
@@ -31,7 +31,6 @@ var RoomSchema = new Schema({
   },
   users: [{
     user: {
-      // type: String,
       type: Schema.ObjectId,
       ref: 'User'
     },
@@ -55,7 +54,12 @@ var RoomSchema = new Schema({
 
 RoomSchema.pre('save', function(next) {
   if (this.isNew) {
-    this.colors = colorize();
+    this.colors = [
+      '#375066', '#42243c', '#8a0606', '#f5870a', '#035439', '#0960e3', '#782367', '#ad5e5e', '#423824', '#0af5c6',
+      '#5e68ad', '#f547a4', '#e30909', '#8a7d4a', '#32ada5', '#0909e3', '#780533', '#f5a284', '#bfb308', '#033e42',
+      '#0b0342', '#f50a48', '#421c03', '#395403', '#0ac6f5', '#420578', '#9c682d', '#8ed108', '#0776ad', '#ad42e3',
+      '#f5c084', '#37bf5c'
+    ];
     this.docName = id();
   }
 
@@ -102,13 +106,8 @@ RoomSchema.methods = {
     if (this.colors.length) {
       return this.colors.pop();
     } else {
-      var r = Math.round((Math.random() * 255) / 2);
-      var g = Math.round((Math.random() * 255) / 2);
-      var b = Math.round((Math.random() * 255) / 2);
-      return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+      return color();
     }
-
-    this.save();
   },
 
   restoreColor: function(color) {

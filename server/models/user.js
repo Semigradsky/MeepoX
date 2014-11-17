@@ -2,6 +2,7 @@
 
 var mongoose = require('mongoose');
 var crypto = require('crypto');
+var salt = require('../libs/generators/salt');
 
 var Schema = mongoose.Schema;
 
@@ -48,7 +49,7 @@ UserSchema.methods = {
 
   addRoom: function(roomId, cb) {
     this.rooms.push({
-      room: roomId,
+      room: roomId
     });
 
     this.save(cb);
@@ -91,7 +92,7 @@ UserSchema.virtual('id')
 
 UserSchema.virtual('password')
   .set(function(password) {
-    this.salt = crypto.randomBytes(32).toString('base64');
+    this.salt = salt();
     this.hashedPassword = this.encryptPassword(password);
   });
 

@@ -1,6 +1,6 @@
 {
   "preset": "yandex",
-  "excludeFiles": ["node_modules/**"],
+  "excludeFiles": ["node_modules/**", "gulp/**"],
   "fileExtensions": [".js"],
   "maxErrors": 5,
 

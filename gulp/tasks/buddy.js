@@ -4,9 +4,9 @@ var config = require('../config');
 
 gulp.task('buddy', function () {
   return gulp.src([
-    config.clientSrc,
-    config.serverSrc
-  ].concat(config.js.ignoreSrc).concat('!server/libs/**'))
+    config.js.clientSrc,
+    config.js.serverSrc
+  ].concat(config.js.ignoreSrc).concat('!server/libs/generators/**'))
     .pipe(buddyjs({
       reporter: 'detailed'
     }));

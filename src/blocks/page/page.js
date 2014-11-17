@@ -7,4 +7,3 @@ var editor = require('../editor/editor')('ace');
 
 editor.init();
 connection.connect();
-
