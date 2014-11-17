@@ -25,7 +25,10 @@ module.exports = function(a) {
 
   function attachToDocument(doc) {
     doc.attach_ace(editor);
-    editor.setReadOnly(false);
+  }
+
+  function editorChangeReadonly(user) {
+    editor.setReadOnly(user.readonly);
   }
 
   function updateCursorMarker(data) {
@@ -35,13 +38,13 @@ module.exports = function(a) {
 
     removeMarker(data);
 
-    var range = new Range(data.cursor.row, data.cursor.column, data.cursor.row, data.cursor.column + 1);
+    var range = new Range(data.userCursor.row, data.userCursor.column, data.userCursor.row, data.userCursor.column + 1);
 
     var markerId = editor.session.addMarker(range, 'ace_selection', drawMarker, true);
 
     cursorMarkers[data.userId] = {
       markerId: markerId,
-      cursor: data.cursor
+      cursor: data.userCursor
     };
 
     function drawMarker(stringBuilder, range, left, top, config) {
@@ -81,6 +84,7 @@ module.exports = function(a) {
   return {
     attachToDocument: attachToDocument,
     updateCursorMarker: updateCursorMarker,
-    removeMarker: removeMarker
+    removeMarker: removeMarker,
+    editorChangeReadonly: editorChangeReadonly
   };
 };

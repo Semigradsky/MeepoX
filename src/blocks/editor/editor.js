@@ -16,9 +16,7 @@ module.exports = function(editorName) {
 
   socket.on('markerUpdate', editor.updateCursorMarker);
   socket.on('markerRemove', editor.removeMarker);
-  socket.on('changeRoom', function(data) {
-    openDocument(data.roomId);
-  });
+  socket.on('connectedUserReadonly', editor.editorChangeReadonly);
 
   var sbPosition;
 

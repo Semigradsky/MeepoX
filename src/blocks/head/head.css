@@ -45,11 +45,20 @@
 }
 
 .head__right {
-  display: inline-block;
+  display: inline-block!important;
 }
 
 .head__user {
   display: inline;
 
   margin: 0 15px;
+}
+
+.head__visible_hidden {
+  visibility: hidden;
+  display: none;
+}
+
+.head__visible_visible {
+  visibility: visible;
 }

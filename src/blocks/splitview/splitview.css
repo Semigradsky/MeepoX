@@ -10,7 +10,7 @@
 .splitview__panel {
   width: 100%;
 
-  background-color: #002b36;
+  background-color: transparent;
 }
 
 .splitview__panel_editor {
@@ -27,4 +27,14 @@
 
 .theme_dark .splitview__panel_right {
   background-color: #002630;
+}
+
+.splitview__panel_project {
+  margin: 50px 50px 30px 50px;
+
+  height: inherit;
+}
+
+.splitview__panel_project h1 {
+  font-size: 1.2em;
 }

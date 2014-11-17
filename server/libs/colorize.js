@@ -8,27 +8,5 @@ var colors = [
 ];
 
 module.exports = function() {
-  var availableColors = colors.slice();
-
-  var getColor = function() {
-    if (availableColors.length) {
-      return availableColors.pop();
-    } else {
-      var randColor = colors[Math.round(Math.random() * 37)];
-      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(randColor);
-      var r = Math.round((parseInt(result[1], 16) + Math.random() * 255) / 2);
-      var g = Math.round((parseInt(result[2], 16) + Math.random() * 255) / 2);
-      var b = Math.round((parseInt(result[3], 16) + Math.random() * 255) / 2);
-      return 'rgb(' + r + ', ' + g + ', ' + b + ')';
-    }
-  };
-
-  var restoreColor = function(color) {
-    availableColors.push(color);
-  };
-
-  return {
-    getColor: getColor,
-    restoreColor: restoreColor
-  };
+  return colors.slice();
 };

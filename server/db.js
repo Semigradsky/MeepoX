@@ -1,96 +1,195 @@
 /*jshint -W079 */
 'use strict';
 
-var Room = require('./room.js');
-var colorize = require('./libs/colorize');
 var Promise = require('es6-promise').Promise;
+var RoomModel = require('./models/room');
+var UserModel = require('./models/user');
 
-var rooms = {};
+function createRoom(room, creator) {
+  return new Promise(function(resolve, reject) {
 
-function clearRooms() {
-  return new Promise(function(resolve) {
-    rooms = {};
-    resolve();
-  });
-}
+    var roomName = room.projectname;
+    var roomDescrip = room.description;
+    var roomReadOnly = room.readonly;
+    if (!roomName) {
+      reject(new Error('Project Name not specified'));
+    }
+    if (roomReadOnly === 'on') {
+      roomReadOnly = true;
+    }
 
-function createRoom(roomId) {
-  return new Promise(function(resolve) {
-    var room = rooms[roomId] || (rooms[roomId] = new Room(colorize()));
-    resolve(room);
+    room = new RoomModel({name: roomName, description: roomDescrip, readOnly: roomReadOnly, creator: creator});
+      room.save(function(err, room) {
+        if (err) {
+          reject(err);
+        } else {
+          UserModel.getUser(creator, function(err, user) {
+            if (err) {
+              reject(err);
+            } else if (user) {
+              user.addRoom(room.id);
+            } else {
+              reject(new Error('User does not exist'));
+            }
+          });
+          resolve(room);
+        }
+      });
   });
 }
 
 function getRoom(roomId) {
   return new Promise(function(resolve, reject) {
-    var room = rooms[roomId];
-    if (room) {
-      resolve(room);
-    } else {
-      reject();
-    }
+    RoomModel.getRoom(roomId, function(err, room) {
+      if (err) {
+        reject(err);
+      } else if (room) {
+        resolve(room);
+      } else {
+        reject(new Error('Room not found'));
+      }
+    });
   });
 }
 
 function getUsersFromRoom(roomId) {
   return new Promise(function(resolve, reject) {
-    getRoom(roomId).then(function(room) {
-      resolve(room.getUsers());
-    }).catch(function() {
-      reject();
+    RoomModel.getUsers(roomId, function(err, foundUsers) {
+      if (err) {
+        reject(err);
+      } else if (foundUsers) {
+        resolve(foundUsers);
+      } else {
+        reject(new Error('Room does not exist'));
+      }
     });
   });
 }
 
-function addUserToRoom(roomId, user) {
+function addUserToRoom(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    getRoom(roomId).then(function(room) {
-      room.addUser(user);
-      resolve();
-    }).catch(function() {
-      reject();
+    RoomModel.getRoom(roomId, function(err, room) {
+      if (err) {
+        reject(err);
+      } else if (room) {
+        room.addUser(userId, function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        reject(new Error('Room does not exist'));
+      }
     });
   });
 }
 
 function removeUserFromRoom(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    getRoom(roomId).then(function(room) {
-      resolve(room.removeUser(userId));
-    }).catch(function() {
-      reject();
+    RoomModel.getRoom(roomId, function(err, room) {
+      if (err) {
+        reject(err);
+      } else if (room) {
+        room.removeUser(userId, function(found) {
+          resolve(found);
+        });
+      } else {
+        reject(new Error('Room does not exist'));
+      }
     });
   });
 }
 
 function userUpdateCursorPosition(roomId, userId, cursorPosition) {
   return new Promise(function(resolve, reject) {
-    getRoom(roomId).then(function(room) {
-      room.userSetCursor(userId, cursorPosition);
-      resolve();
-    }).catch(function() {
-      reject();
+    RoomModel.getRoom(roomId, function(err, room) {
+      if (err) {
+        reject(err);
+      } else if (room) {
+        room.userSetCursor(userId, cursorPosition, function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        reject(new Error('Room does not exist'));
+      }
     });
   });
 }
 
 function getUser(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    getRoom(roomId).then(function(room) {
-      var user = room.getUser(userId);
-      if (user) {
+    RoomModel.getUser(roomId, userId, function(err, user) {
+      if (err) {
+        reject(err);
+      } else if (user) {
         resolve(user);
       } else {
         reject();
       }
-    }).catch(function() {
-      reject();
+    });
+  });
+}
+
+function userLocalRegister(userName, userPassword) {
+  return new Promise(function(resolve, reject) {
+    UserModel.findUserByName(userName, function(err, user) {
+      if (err) {
+        reject(err);
+      } else if (user) {
+        resolve(false);
+      } else {
+        user = new UserModel({username: userName, password: userPassword});
+        user.save(function(err, user) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(user);
+          }
+        });
+      }
+    });
+  });
+}
+
+function userLocalAuth(userName, userPassword) {
+  return new Promise(function(resolve, reject) {
+    UserModel.findUserByName(userName, function(err, user) {
+      if (err) {
+        reject(err);
+      } else if (user) {
+        if (user.checkPassword(userPassword)) {
+          resolve(user);
+        } else {
+          resolve(false);
+        }
+      } else {
+        resolve(false);
+      }
+    });
+  });
+}
+
+function getUserById(userId) {
+  return new Promise(function(resolve, reject) {
+    UserModel.getUser(userId, function(err, user) {
+      if (err) {
+        reject(err);
+      } else if (user) {
+        resolve(user);
+      } else {
+        resolve(false);
+      }
     });
   });
 }
 
 module.exports = {
-  __clearRooms: clearRooms,
   room: {
     create: createRoom,
     get: getRoom,
@@ -103,5 +202,10 @@ module.exports = {
       setCursor: userUpdateCursorPosition,
       get: getUser
     }
+  },
+  user: {
+    localReg: userLocalRegister,
+    localAuth: userLocalAuth,
+    getById: getUserById
   }
 };

@@ -26,6 +26,10 @@ body.theme_dark {
 }
 
 
-a {
+a, input, textarea {
+  color: #4c6a72;
+}
+
+::placeholder {
   color: #4c6a72;
 }

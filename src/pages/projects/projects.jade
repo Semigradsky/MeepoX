@@ -1,0 +1,19 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title Meepo
+    link(rel='stylesheet', href='css/projects.css')
+  body.theme_dark
+    +head
+    .splitview
+      if (projects)
+        .splitview__panel.splitview__panel_project
+          h1 My Projects
+          ul.projects__list
+            each val, index in projects
+              li
+                a(href=val.room.docName)= val.room.name
+                p= val.room.description
+      .splitview__panel.splitview__panel_project
+        +newProject

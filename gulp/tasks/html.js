@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var bem = require('gulp-bem');
 var concat = require('gulp-concat');
 var jade = require('gulp-jade');
+var gulpif = require('gulp-if');
 var config = require('../config');
 
 gulp.task('html', ['tree'], function () {
@@ -12,7 +13,6 @@ gulp.task('html', ['tree'], function () {
           path: page.path + '/' + page.id + '.jade',
           base: page.path
       }))
-      .pipe(jade({pretty: true}))
       .pipe(gulp.dest(config.html.dest));
   }
 

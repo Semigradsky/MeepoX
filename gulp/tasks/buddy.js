@@ -1,12 +1,12 @@
 var gulp = require('gulp');
 var buddyjs = require('gulp-buddy.js');
-var config = require('../config').js;
+var config = require('../config');
 
 gulp.task('buddy', function () {
   return gulp.src([
     config.clientSrc,
     config.serverSrc
-  ].concat(config.ignoreSrc).concat('!server/libs/**'))
+  ].concat(config.js.ignoreSrc).concat('!server/libs/**'))
     .pipe(buddyjs({
       reporter: 'detailed'
     }));

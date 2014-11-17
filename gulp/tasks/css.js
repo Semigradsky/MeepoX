@@ -2,6 +2,8 @@ var gulp = require('gulp');
 var bem = require('gulp-bem');
 var concat = require('gulp-concat');
 var stylus = require('gulp-stylus');
+var csso = require('gulp-csso');
+var gulpif = require('gulp-if');
 var autoprefixer = require('gulp-autoprefixer');
 var config = require('../config');
 
@@ -15,6 +17,7 @@ gulp.task('css', ['tree'], function () {
           browsers: config.css.browsers,
           cascade: config.css.cascade
       }))
+      .pipe(gulpif(!config.isDebug, csso(true)))
       .pipe(gulp.dest(config.css.dest));
   }
 
