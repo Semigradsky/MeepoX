@@ -4,188 +4,139 @@
 var Promise = require('es6-promise').Promise;
 var RoomModel = require('./models/room');
 var UserModel = require('./models/user');
+var intercept = require('./libs/intercept');
 
 function createRoom(room, creator) {
   return new Promise(function(resolve, reject) {
-
-    var roomName = room.projectname;
-    var roomDescrip = room.description;
-    var roomReadOnly = room.readonly;
-    if (!roomName) {
+    if (!room.projectname) {
       reject(new Error('Project Name not specified'));
     }
-    if (roomReadOnly === 'on') {
-      roomReadOnly = true;
-    }
 
-    room = new RoomModel({name: roomName, description: roomDescrip, readOnly: roomReadOnly, creator: creator});
-      room.save(function(err, room) {
-        if (err) {
-          reject(err);
-        } else {
-          UserModel.getUser(creator, function(err, user) {
-            if (err) {
-              reject(err);
-            } else if (user) {
-              user.addRoom(room.id);
-            } else {
-              reject(new Error('User does not exist'));
-            }
-          });
-          resolve(room);
-        }
-      });
+    room = new RoomModel({
+      name: room.projectname,
+      description: room.description,
+      readOnly: room.readonly === 'on',
+      creator: creator
+    });
+
+    room.save(intercept(reject, function(room) {
+
+      UserModel.getUser(creator, intercept(reject, function(user) {
+        user.addRoom(room.id);
+      }, 'User does not exist'));
+
+      resolve(room);
+    }));
+
   });
 }
 
 function getRoom(roomId) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getRoom(roomId, function(err, room) {
-      if (err) {
-        reject(err);
-      } else if (room) {
-        resolve(room);
-      } else {
-        reject(new Error('Room not found'));
-      }
-    });
+
+    RoomModel.getRoom(roomId, intercept(reject, function(room) {
+      resolve(room);
+    }, 'Room not found'));
+
   });
 }
 
 function getUsersFromRoom(roomId) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getUsers(roomId, function(err, foundUsers) {
-      if (err) {
-        reject(err);
-      } else if (foundUsers) {
-        resolve(foundUsers);
-      } else {
-        reject(new Error('Room does not exist'));
-      }
-    });
+
+    RoomModel.getUsers(roomId, intercept(reject, function(foundUsers) {
+      resolve(foundUsers);
+    }, 'Room does not exist'));
+
   });
 }
 
 function addUserToRoom(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getRoom(roomId, function(err, room) {
-      if (err) {
-        reject(err);
-      } else if (room) {
-        room.addUser(userId, function(err) {
-          if (err) {
-            reject(err);
-          } else {
+
+    RoomModel.getRoom(roomId, intercept(reject, function(room) {
+        room.addUser(userId, intercept(reject, function() {
             resolve();
-          }
-        });
-      } else {
-        reject(new Error('Room does not exist'));
-      }
-    });
+        }));
+    }, 'Room does not exist'));
+
   });
 }
 
 function removeUserFromRoom(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getRoom(roomId, function(err, room) {
-      if (err) {
-        reject(err);
-      } else if (room) {
-        room.removeUser(userId, function(found) {
-          resolve(found);
-        });
-      } else {
-        reject(new Error('Room does not exist'));
-      }
-    });
+
+    RoomModel.getRoom(roomId, intercept(reject, function(room) {
+      room.removeUser(userId, function(found) {
+        resolve(found);
+      });
+    }, 'Room does not exist'));
+
   });
 }
 
 function userUpdateCursorPosition(roomId, userId, cursorPosition) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getRoom(roomId, function(err, room) {
-      if (err) {
-        reject(err);
-      } else if (room) {
-        room.userSetCursor(userId, cursorPosition, function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      } else {
-        reject(new Error('Room does not exist'));
-      }
-    });
+
+    RoomModel.getRoom(roomId, intercept(reject, function(room) {
+      room.userSetCursor(userId, cursorPosition, intercept(reject, function() {
+        resolve();
+      }));
+    }), 'Room does not exist');
+
   });
 }
 
 function getUser(roomId, userId) {
   return new Promise(function(resolve, reject) {
-    RoomModel.getUser(roomId, userId, function(err, user) {
-      if (err) {
-        reject(err);
-      } else if (user) {
+
+    RoomModel.getUser(roomId, userId, intercept(reject, function(user) {
         resolve(user);
-      } else {
-        reject();
-      }
-    });
+    }, reject));
+
   });
 }
 
 function userLocalRegister(userName, userPassword) {
   return new Promise(function(resolve, reject) {
-    UserModel.findUserByName(userName, function(err, user) {
-      if (err) {
-        reject(err);
-      } else if (user) {
-        resolve(false);
-      } else {
-        user = new UserModel({username: userName, password: userPassword});
-        user.save(function(err, user) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(user);
-          }
-        });
-      }
-    });
+
+    UserModel.findUserByName(userName, intercept(reject, function() {
+      resolve(false);
+    }, function() {
+      var user = new UserModel({username: userName, password: userPassword});
+      user.save(intercept(reject, function(user) {
+        resolve(user);
+      }));
+    }));
+
   });
 }
 
 function userLocalAuth(userName, userPassword) {
   return new Promise(function(resolve, reject) {
-    UserModel.findUserByName(userName, function(err, user) {
-      if (err) {
-        reject(err);
-      } else if (user) {
-        if (user.checkPassword(userPassword)) {
-          resolve(user);
-        } else {
-          resolve(false);
-        }
+
+    UserModel.findUserByName(userName, intercept(reject, function(user) {
+      if (user.checkPassword(userPassword)) {
+        resolve(user);
       } else {
         resolve(false);
       }
-    });
+    }, function() {
+      resolve(false);
+    }));
+
   });
 }
 
 function getUserById(userId) {
   return new Promise(function(resolve, reject) {
-    UserModel.getUser(userId, function(err, user) {
-      if (err) {
-        reject(err);
-      } else if (user) {
-        resolve(user);
-      } else {
-        resolve(false);
-      }
-    });
+
+    UserModel.getUser(userId, intercept(reject, function(user) {
+      resolve(user);
+    }, function() {
+      resolve(false);
+    }));
+
   });
 }
 
@@ -196,7 +147,7 @@ module.exports = {
     getUsers: getUsersFromRoom,
     update: {
       addUser: addUserToRoom,
-      removeUser: removeUserFromRoom,
+      removeUser: removeUserFromRoom
     },
     user: {
       setCursor: userUpdateCursorPosition,

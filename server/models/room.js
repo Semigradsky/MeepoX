@@ -85,6 +85,7 @@ RoomSchema.methods = {
         _this.restoreColor(user.userColor);
         _this.users.splice(pos, 1);
         foundUser = true;
+        return true;
       }
     });
 
@@ -96,6 +97,7 @@ RoomSchema.methods = {
     this.users.some(function(user) {
       if (user.user.toString() === userId.toString()) {
         user.userCursor = position;
+        return true;
       }
     });
 
@@ -112,7 +114,6 @@ RoomSchema.methods = {
 
   restoreColor: function(color) {
     this.colors.push(color);
-
     this.save();
   }
 };
@@ -128,13 +129,13 @@ RoomSchema.statics = {
       .exec(function(err, data) {
         if (err || !data) {
           cb(err, null);
-        } else {
-          var resUsers = [];
-          data.users.some(function(user) {
-            resUsers.push(transformUser(user));
-          });
-          cb(null, resUsers);
+          return;
         }
+
+        var resUsers = data.users.map(function(user) {
+          return transformUser(user);
+        });
+        cb(null, resUsers);
       });
   },
 
@@ -144,24 +145,25 @@ RoomSchema.statics = {
       .exec(function(err, data) {
         if (err || !data) {
           cb(err, null);
-        } else {
-          data.users.some(function(user) {
-            if (user.user._id.toString() === userId.toString()) {
-              cb(null, transformUser(user));
-            }
-          });
+          return;
         }
+
+        data.users.forEach(function(user) {
+          if (user.user._id.toString() === userId.toString()) {
+            cb(null, transformUser(user));
+          }
+        });
       });
   }
 };
 
 var transformUser = function(user) {
-  var resUser = {};
-  resUser.userId = user.user._id.toString();
-  resUser.userName = user.user.username;
-  resUser.userColor = user.userColor;
-  resUser.userCursor = user.userCursor;
-  return resUser;
+  return {
+    userId: user.user._id.toString(),
+    userName: user.user.username,
+    userColor: user.userColor,
+    userCursor: user.userCursor
+  };
 };
 
 var RoomModel = mongoose.model('Room', RoomSchema);
