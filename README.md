@@ -9,6 +9,30 @@
 
 Awesome online code editor that lets people collaborate in real-time.
 
+Вклад в проект
+---
+
+Ифраструктура:
+###
+- README репозитория
+- EditorConfig
+- средства для проверки кода (JsHint, JsCs)
+- PreCommit Hook
+- [Plato](https://github.com/es-analysis/plato), для проверки различных показателей кода
+- тестовое окружение (Mocha + Chai)
+- [Istanbul](https://github.com/gotwarlost/istanbul), для контроля тестового покрытия кода
+- production сборка в gulp
+- бейджики в README :smile:
+
+Разработка:
+###
+- тесты для серверной части
+- возможность ввода имени пользователя, валидация ввода
+- синхронизация полльзователей с помощью ShareJS
+- периодический рефакторинг ранее написанного кода (клиент и сервер)
+
+
+
 ## Running
 
 App development depends on npm, the Node package manager, which is distributed with Node.js. If you haven't done so already, be sure to [download](http://nodejs.org/download/) and run the prebuilt Node.js installer for your platform from the Node.js website. Then, to run app locally, follow these steps:
